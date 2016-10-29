@@ -44,6 +44,10 @@ It aims to represent the contract of your API with a language agnostic descripti
 	if err != nil {
 		log.Fatal(err)
 	}
+	_, err = parser.AddCommand("expand", "expand refs in the swagger document", "resolve all the refs in a swagger document.", &commands.ExpandSpec{})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	_, err = parser.AddCommand("init", "initialize a spec document", "initialize a swagger spec document", &commands.InitCmd{})
 	if err != nil {
