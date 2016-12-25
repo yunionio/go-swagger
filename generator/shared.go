@@ -108,6 +108,13 @@ func GoLangOpts() *LanguageOpts {
 	return opts
 }
 
+// MarkdownOpts for rendering a spec as markdown
+func MarkdownOpts() *LanguageOpts {
+	opts := &LanguageOpts{}
+	opts.Init()
+	return opts
+}
+
 // Debug when the env var DEBUG is not empty
 // the generators will be very noisy about what they are doing
 var Debug = os.Getenv("DEBUG") != ""
@@ -136,6 +143,21 @@ func findSwaggerSpec(nm string) (string, error) {
 		return "", errors.New("couldn't find a swagger spec")
 	}
 	return name, nil
+}
+
+// MarkdownSectionOpts for a given opts and output file.
+func MarkdownSectionOpts(gen *GenOpts, output string) {
+	gen.Sections.Models = nil
+	gen.Sections.OperationGroups = nil
+	gen.Sections.Operations = nil
+	gen.Sections.Application = []TemplateOpts{
+		{
+			Name:     "markdowndocs",
+			Source:   "asset:markdownDocs",
+			Target:   filepath.Dir(output),
+			FileName: filepath.Base(output),
+		},
+	}
 }
 
 // DefaultSectionOpts for a given opts, this is used when no config file is passed
@@ -406,7 +428,9 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 	var tags []string
 	tagsF := v.FieldByName("Tags")
 	if tagsF.IsValid() {
-		tags = tagsF.Interface().([]string)
+		if tt, ok := tagsF.Interface().([]string); ok {
+			tags = tt
+		}
 	}
 
 	pthTpl, err := template.New(t.Name + "-target").Funcs(FuncMap).Parse(t.Target)

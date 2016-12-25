@@ -1,0 +1,221 @@
+{{ if .Info -}}
+{{ if .Info.Title }}# {{ .Info.Title }}{{ end }}
+{{ if .Info.Description }}
+{{ .Info.Description }}{{ if .ExternalDocs }}
+{{ if .ExternalDocs.URL }}[Read more]({{ .ExternalDocs.URL}}{{ if .ExternalDocs.Description }} {{ printf "%q" .ExternalDocs.Description }}{{ end }} ){{ else }}{{ .ExternalDocs.Description }}{{ end }}{{ end }}{{ end -}}
+{{ if .Info.Version }}
+#### Version
+
+{{ .Info.Version }}
+{{ end -}}
+{{ if .Info.License }}
+#### License
+
+{{ if .Info.License.Name }}[{{ .Info.License.Name }}]({{ end}}{{ .Info.License.URL }}{{ if .Info.License.Name }}){{ end }}{{ end }}
+{{ if .Info.Contact }}
+#### Contact
+
+{{ .Info.Contact.Name }} {{ .Info.Contact.Email }} {{ .Info.Contact.URL }}{{ end }}
+{{ if .Info.TermsOfService }}
+#### Terms Of Service
+
+{{ .Info.TermsOfService }}
+{{ end -}}
+{{ end -}}
+{{ if .Tags }}
+## Tags
+{{ range .Tags }}
+### {{ if .ExternalDocs }}[{{ .Name }}]({{ .ExternalDocs.URL }}{{ if .ExternalDocs.Description }} {{ printf "%q" .ExternalDocs.Description }}{{ end }}){{ else }}{{ .Name }}{{ end }}{{ if .Description }}
+
+{{ .Description }}{{ end }}
+{{ end }}{{ end }}
+{{ if .Schemes }}
+## URI Schemes
+
+{{ range .Schemes }}* {{ . }}
+{{ end }}{{ range .ExtraSchemes }}* {{ . }}
+{{ end }}{{ end }}
+{{ if .Consumes }}## Consumes
+
+{{ range .Consumes }}{{ range .AllSerializers }}* {{ .MediaType }}
+{{ end }}{{ end }}{{ end }}
+{{ if .Produces }}## Produces
+
+{{ range .Produces }}{{ range .AllSerializers }}* {{ .MediaType }}
+{{ end }}{{ end }}{{ end }}
+{{ if .SecurityDefinitions }}## Securtity Schemes
+{{ range .SecurityDefinitions }}
+### {{ .Name }}{{ if .Source }} ({{ .Source }}){{ end }}
+{{ .Description }}
+{{ if .Type }}**Type**: {{ .Type }}
+{{ end }}{{ if .IsOAuth2}}{{ if .Flow }}**Flow**: {{ .Flow }}
+{{ end }}{{ if .AuthorizationURL }}**Authorization URL**: {{ .AuthorizationURL }}
+{{ end }}{{ if .TokenURL }}**Token URL**: {{ .TokenURL }}
+{{ end }}
+{{ if .ScopesDesc }}#### Scopes
+Name | Description
+-----|-------------
+{{ range .ScopesDesc }}{{ .Name }} | {{ .Description }}
+{{ end }}{{ end }}{{ end }}{{ end }}{{ end }}
+{{ if .SecurityRequirements }}## Security Requirements
+
+{{ range .SecurityRequirements }}* {{ .Name }}{{ if .Scopes }}: {{ range $idx, $scope := .Scopes }}{{ if gt $idx 0 }}, {{ end }}{{ $scope }}{{ end }}{{ end }}
+{{ end }}
+{{ end }}
+## Paths
+
+{{ range .Operations }}### {{ if .Summary }}{{ .Summary }}{{ else }}{{ humanize .Name }}{{ end }} (*{{ .Name }}*)
+
+```
+{{ upper .Method }} {{ joinPath .BasePath .Path }}
+```
+{{ if .Description }}
+{{ .Description }}{{ end }}
+{{ if .ExternalDocs }}{{ if .ExternalDocs.URL }}[Read more]({{ .ExternalDocs.URL }} "{{ .ExternalDocs.Description }}"){{ end }}{{ end }}
+{{ if or (gt (len .SchemeOverrides)  0) (gt (len .ExtraSchemeOverrides) 0) }}
+#### URI Schemes
+
+{{ range .SchemeOverrides }}* {{ . }}
+{{ end }}{{ range .ExtraSchemeOverrides }}* {{ . }}
+{{ end }}{{ end -}}
+{{ if .Consumes }}#### Consumes
+
+{{ range .Consumes }}* {{ . }}
+{{ end }}{{ end }}
+{{ if .Produces }}#### Produces
+
+{{ range .Produces }}* {{ . }}
+{{ end }}{{ end }}
+{{ if .SecurityRequirements }}#### Security Requirements
+
+{{ range .SecurityRequirements }}* {{ .Name }}{{ if .Scopes }}: {{ range $idx, $scope := .Scopes }}{{ if gt $idx 0 }}, {{ end }}{{ $scope }}{{ end }}{{ end }}
+{{ end }}{{ end }}
+{{ if .Params }}#### Parameters
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Source</th>
+      <th>Type</th>
+      <th>Separator</th>
+      <th align="center">Required</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+  {{ range .PathParams }}    <tr>
+      <td>{{ .Name }}</td>
+      <td>{{ .Location }}</td>
+      <td>{{ paramDocType . }}</td>
+      <td>{{ docCollectionFormat .CollectionFormat .Child }}</td>
+      <td align="center">{{ if .Required }}✓{{ end }}</td>
+      <td>{{ if .Default }}`{{ json .Default }}`{{ end }}</td>
+      <td>{{ .Description }}</td>
+    </tr>
+  {{ end -}}
+  {{ range .HeaderParams }}  <tr>
+      <td>{{ .Name }}</td>
+      <td>{{ .Location }}</td>
+      <td>{{ paramDocType . }}</td>
+      <td>{{ docCollectionFormat .CollectionFormat .Child }}</td>
+      <td align="center">{{ if .Required }}✓{{ end }}</td>
+      <td>{{ if .Default }}`{{ json .Default }}`{{ end }}</td>
+      <td>{{ .Description }}</td>
+    </tr>
+  {{ end -}}
+  {{ range .QueryParams }}  <tr>
+      <td>{{ .Name }}</td>
+      <td>{{ .Location }}</td>
+      <td>{{ paramDocType . }}</td>
+      <td>{{ docCollectionFormat .CollectionFormat .Child }}</td>
+      <td align="center">{{ if .Required }}✓{{ end }}</td>
+      <td>{{ if .Default }}`{{ json .Default }}`{{ end }}</td>
+      <td>{{ .Description }}</td>
+    </tr>
+  {{ end -}}
+  {{ range .FormParams }}  <tr>
+      <td>{{ .Name }}</td>
+      <td>{{ .Location }}</td>
+      <td>{{ paramDocType . }}</td>
+      <td>{{ docCollectionFormat .CollectionFormat .Child }}</td>
+      <td align="center">{{ if .Required }}✓{{ end }}</td>
+      <td>{{ if .Default }}`{{ json .Default }}`{{ end }}</td>
+      <td>{{ .Description }}</td>
+    </tr>
+  {{ end -}}
+  {{ range .Params }}{{ if .IsBodyParam }}  <tr>
+      <td>body</td>
+      <td>body</td>
+      <td>{{ .Name }}</td>
+      <td></td>
+      <td align="center">{{ if .Required }}✓{{ end }}</td>
+      <td>{{ if .Default }}```json
+      {{ prettyjson .Default }}
+      ```{{ end }}</td>
+      <td>{{ .Description }}</td>
+    </tr>
+  {{ end }}{{ end }}  </tbody>
+</table>
+{{ end }}
+
+#### Responses
+
+<table>
+  <thead>
+    <tr>
+      <th align="center">Code</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+{{ range .Responses }}    <tr>
+      <td align="center">{{ .Code }}</td>
+      <td></td>
+      <td>{{ trimSpace .Description }}</td>
+    </tr>
+{{ end }}{{ if .DefaultResponse }}    <tr>
+      <td align="center">default</td>
+      <td></td>
+      <td>{{ trimSpace .Description }}</td>
+    </tr>
+{{ end }}  </tbody>
+</table>
+
+{{ end -}}
+## Models
+
+{{ range .Models }}
+### {{ .Name }}
+{{ if .Description }}
+{{ .Description }}{{ end }}
+{{ if .Properties }}#### Properties
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th align="center">Required</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+{{ range .AllOf }}{{ if or (and $.IsSubType .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}    <tr>
+      <td>{{ .Name }}</td>
+      <td>{{ .GoType }}</td>
+      <td align="center">{{ if .Required }}✓{{ end }}</td>
+      <td>{{ trimSpace .Description }}</td>
+    </tr>
+{{ end }}{{ end }}{{ end }}
+{{ range .Properties }}    <tr>
+      <td>{{ .Name }}</td>
+      <td>{{ .GoType }}</td>
+      <td align="center">{{ if .Required }}✓{{ end }}</td>
+      <td>{{ trimSpace .Description }}</td>
+    </tr>
+{{ end }}  </tbody>
+</table>
+{{ end }}
+{{ end }}

@@ -328,10 +328,11 @@ type GenOperation struct {
 	DefaultImports []string
 	ExtraSchemas   []GenSchema
 
-	Authorized          bool
-	Security            []analysis.SecurityRequirement
-	SecurityDefinitions map[string]spec.SecurityScheme
-	Principal           string
+	Authorized           bool
+	Security             []analysis.SecurityRequirement
+	SecurityDefinitions  map[string]spec.SecurityScheme
+	Principal            string
+	SecurityRequirements []analysis.SecurityRequirement
 
 	SuccessResponse  *GenResponse
 	SuccessResponses []GenResponse
@@ -349,12 +350,15 @@ type GenOperation struct {
 	HasFileParams        bool
 	HasStreamingResponse bool
 
-	Schemes            []string
-	ExtraSchemes       []string
-	ProducesMediaTypes []string
-	ConsumesMediaTypes []string
-	WithContext        bool
-	TimeoutName        string
+	Schemes              []string
+	ExtraSchemes         []string
+	SchemeOverrides      []string
+	ExtraSchemeOverrides []string
+	Produces             []string
+	Consumes             []string
+	ExternalDocs         *spec.ExternalDocumentation
+	WithContext          bool
+	TimeoutName          string
 }
 
 // GenOperations represents a list of operations to generate
@@ -368,31 +372,33 @@ func (g GenOperations) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 // GenApp represents all the meta data needed to generate an application
 // from a swagger spec
 type GenApp struct {
-	APIPackage          string
-	Package             string
-	ReceiverName        string
-	Name                string
-	Principal           string
-	DefaultConsumes     string
-	DefaultProduces     string
-	Host                string
-	BasePath            string
-	Info                *spec.Info
-	ExternalDocs        *spec.ExternalDocumentation
-	Imports             map[string]string
-	DefaultImports      []string
-	Schemes             []string
-	ExtraSchemes        []string
-	Consumes            GenSerGroups
-	Produces            GenSerGroups
-	SecurityDefinitions []GenSecurityScheme
-	Models              []GenDefinition
-	Operations          GenOperations
-	OperationGroups     GenOperationGroups
-	SwaggerJSON         string
-	ExcludeSpec         bool
-	WithContext         bool
-	GenOpts             *GenOpts
+	APIPackage           string
+	Package              string
+	ReceiverName         string
+	Name                 string
+	Principal            string
+	DefaultConsumes      string
+	DefaultProduces      string
+	Host                 string
+	BasePath             string
+	Info                 *spec.Info
+	ExternalDocs         *spec.ExternalDocumentation
+	Tags                 []spec.Tag
+	Imports              map[string]string
+	DefaultImports       []string
+	Schemes              []string
+	ExtraSchemes         []string
+	Consumes             GenSerGroups
+	Produces             GenSerGroups
+	SecurityDefinitions  []GenSecurityScheme
+	SecurityRequirements []analysis.SecurityRequirement
+	Models               []GenDefinition
+	Operations           GenOperations
+	OperationGroups      GenOperationGroups
+	SwaggerJSON          string
+	ExcludeSpec          bool
+	WithContext          bool
+	GenOpts              *GenOpts
 }
 
 // UseGoStructFlags returns true when no strategy is specified or it is set to "go-flags"
@@ -461,14 +467,26 @@ func (g GenSecuritySchemes) Less(i, j int) bool { return g[i].Name < g[j].Name }
 
 // GenSecurityScheme represents a security scheme for code generation
 type GenSecurityScheme struct {
-	AppName      string
-	ID           string
-	Name         string
-	ReceiverName string
-	IsBasicAuth  bool
-	IsAPIKeyAuth bool
-	IsOAuth2     bool
-	Scopes       []string
-	Source       string
-	Principal    string
+	AppName          string
+	ID               string
+	Name             string
+	Description      string
+	Type             string
+	ReceiverName     string
+	IsBasicAuth      bool
+	IsAPIKeyAuth     bool
+	IsOAuth2         bool
+	Scopes           []string
+	Source           string
+	Principal        string
+	AuthorizationURL string
+	TokenURL         string
+	Flow             string
+	ScopesDesc       []GenSecurityScope
+}
+
+// GenSecurityScope represents a scope for an OAuth2 security scheme
+type GenSecurityScope struct {
+	Name        string
+	Description string
 }

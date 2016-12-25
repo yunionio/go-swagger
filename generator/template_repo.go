@@ -87,18 +87,57 @@ var FuncMap template.FuncMap = map[string]interface{}{
 		return strings.Join(res, ",")
 	},
 	"joinFilePath": filepath.Join,
+	"joinPath":     path.Join,
 	"comment": func(str string) string {
 		lines := strings.Split(str, "\n")
 		return strings.Join(lines, "\n// ")
 	},
 	"inspect":   pretty.Sprint,
 	"cleanPath": path.Clean,
+	"paramDocType": func(param GenParameter) string {
+		return resolvedDocType(param.SwaggerType, param.SwaggerFormat, param.Child)
+	},
+	"docCollectionFormat": resolvedDocCollectionFormat,
+	"trimSpace":           strings.TrimSpace,
+}
+
+func resolvedDocCollectionFormat(cf string, child *GenItems) string {
+	if child == nil {
+		return cf
+	}
+	ccf := cf
+	if ccf == "" {
+		ccf = "csv"
+	}
+	rcf := resolvedDocCollectionFormat(child.CollectionFormat, child.Child)
+	if rcf == "" {
+		return ccf
+	}
+	return ccf + "|" + rcf
+}
+
+func resolvedDocType(tn, fmt string, child *GenItems) string {
+	if fmt != "" {
+		if fmt == "binary" {
+			return "byte-stream"
+		}
+		if fmt == "byte" {
+			return "base64"
+		}
+		return fmt
+	}
+	if tn == "array" {
+		if child == nil {
+			return "[]any"
+		}
+		return "[]" + resolvedDocType(child.SwaggerType, child.SwaggerFormat, child.Child)
+	}
+	return tn
 }
 
 func init() {
 	templates = NewRepository(FuncMap)
 	templates.LoadDefaults()
-
 }
 
 var assets = map[string][]byte{
@@ -132,6 +171,8 @@ var assets = map[string][]byte{
 	"client/response.gotmpl":  MustAsset("templates/client/response.gotmpl"),
 	"client/client.gotmpl":    MustAsset("templates/client/client.gotmpl"),
 	"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
+
+	"markdown/docs.gotmpl": MustAsset("templates/markdown/docs.gotmpl"),
 }
 
 var protectedTemplates = map[string]bool{

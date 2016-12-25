@@ -34,6 +34,29 @@ import (
 	"github.com/go-openapi/swag"
 )
 
+// GenerateMarkdown documentation for a swagger specification
+func GenerateMarkdown(output string, modelNames, operationIDs []string, opts *GenOpts) error {
+	opts.Sections = SectionOpts{
+		Application: []TemplateOpts{
+			{
+				Name:     "markdowndocs",
+				Source:   "asset:markdownDocs",
+				Target:   filepath.Dir(output),
+				FileName: filepath.Base(output),
+			},
+		},
+	}
+	opts.LanguageOpts = MarkdownOpts()
+	opts.defaultsEnsured = true
+
+	generator, err := newAppGenerator("", modelNames, operationIDs, opts)
+	if err != nil {
+		return err
+	}
+
+	return generator.GenerateMarkdown(output)
+}
+
 // GenerateServer generates a server application
 func GenerateServer(name string, modelNames, operationIDs []string, opts *GenOpts) error {
 	generator, err := newAppGenerator(name, modelNames, operationIDs, opts)
@@ -291,6 +314,15 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 	return a.GenOpts.renderApplication(app)
 }
 
+func (a *appGenerator) GenerateMarkdown(output string) error {
+	app, err := a.makeCodegenApp()
+	if err != nil {
+		return err
+	}
+
+	return a.GenOpts.renderApplication(&app)
+}
+
 var mediaTypeNames = map[*regexp.Regexp]string{
 	regexp.MustCompile("application/.*json"):                "json",
 	regexp.MustCompile("application/.*yaml"):                "yaml",
@@ -354,7 +386,9 @@ func mediaTypeName(tn string) (string, bool) {
 }
 
 func (a *appGenerator) makeConsumes() (consumes GenSerGroups, consumesJSON bool) {
-	for _, cons := range a.Analyzed.RequiredConsumes() {
+	reqCons := a.Analyzed.RequiredConsumes()
+	sort.Strings(reqCons)
+	for _, cons := range reqCons {
 		cn, ok := mediaTypeName(cons)
 		if !ok {
 			continue
@@ -410,12 +444,18 @@ func (a *appGenerator) makeConsumes() (consumes GenSerGroups, consumesJSON bool)
 		})
 		consumesJSON = true
 	}
+
+	for _, c := range consumes {
+		sort.Sort(c.AllSerializers)
+	}
 	sort.Sort(consumes)
 	return
 }
 
 func (a *appGenerator) makeProduces() (produces GenSerGroups, producesJSON bool) {
-	for _, prod := range a.Analyzed.RequiredProduces() {
+	reqProd := a.Analyzed.RequiredProduces()
+	sort.Strings(reqProd)
+	for _, prod := range reqProd {
 		pn, ok := mediaTypeName(prod)
 		if !ok {
 			continue
@@ -470,6 +510,9 @@ func (a *appGenerator) makeProduces() (produces GenSerGroups, producesJSON bool)
 		})
 		producesJSON = true
 	}
+	for _, p := range produces {
+		sort.Sort(p.AllSerializers)
+	}
 	sort.Sort(produces)
 	return
 }
@@ -484,23 +527,31 @@ func (a *appGenerator) makeSecuritySchemes() (security GenSecuritySchemes) {
 		if req, ok := a.SpecDoc.Spec().SecurityDefinitions[scheme]; ok {
 			isOAuth2 := strings.ToLower(req.Type) == "oauth2"
 			var scopes []string
+			var genScopes []GenSecurityScope
 			if isOAuth2 {
-				for k := range req.Scopes {
+				for k, v := range req.Scopes {
 					scopes = append(scopes, k)
+					genScopes = append(genScopes, GenSecurityScope{Name: k, Description: v})
 				}
 			}
 
 			security = append(security, GenSecurityScheme{
-				AppName:      a.Name,
-				ID:           scheme,
-				ReceiverName: a.Receiver,
-				Name:         req.Name,
-				IsBasicAuth:  strings.ToLower(req.Type) == "basic",
-				IsAPIKeyAuth: strings.ToLower(req.Type) == "apikey",
-				IsOAuth2:     isOAuth2,
-				Scopes:       scopes,
-				Principal:    prin,
-				Source:       req.In,
+				AppName:          a.Name,
+				ID:               scheme,
+				Description:      req.Description,
+				ReceiverName:     a.Receiver,
+				Name:             req.Name,
+				Type:             req.Type,
+				IsBasicAuth:      strings.ToLower(req.Type) == "basic",
+				IsAPIKeyAuth:     strings.ToLower(req.Type) == "apikey",
+				IsOAuth2:         isOAuth2,
+				Scopes:           scopes,
+				Principal:        prin,
+				Source:           req.In,
+				AuthorizationURL: req.AuthorizationURL,
+				TokenURL:         req.TokenURL,
+				Flow:             req.Flow,
+				ScopesDesc:       genScopes,
 			})
 		}
 	}
@@ -521,6 +572,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	produces, _ := a.makeProduces()
 	sort.Sort(consumes)
 	sort.Sort(produces)
+
 	prin := a.Principal
 	if prin == "" {
 		prin = "interface{}"
@@ -665,32 +717,80 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		basePath = sw.BasePath
 	}
 
+	var extDocs *spec.ExternalDocumentation
+	if sw.ExternalDocs != nil {
+		extDocs = &spec.ExternalDocumentation{
+			URL:         sw.ExternalDocs.URL,
+			Description: trimBOM(sw.ExternalDocs.Description),
+		}
+	}
+	var info *spec.Info
+	if sw.Info != nil {
+		info = &spec.Info{
+			InfoProps: spec.InfoProps{
+				Contact:        sw.Info.Contact,
+				Title:          trimBOM(sw.Info.Title),
+				Description:    trimBOM(sw.Info.Description),
+				TermsOfService: trimBOM(sw.Info.TermsOfService),
+				License:        sw.Info.License,
+				Version:        sw.Info.Version,
+			},
+			VendorExtensible: sw.Info.VendorExtensible,
+		}
+	}
+	var tags []spec.Tag
+	for _, t := range sw.Tags {
+		var tag spec.Tag
+		var ed *spec.ExternalDocumentation
+		if t.ExternalDocs != nil {
+			ed = &spec.ExternalDocumentation{
+				URL:         t.ExternalDocs.URL,
+				Description: trimBOM(t.ExternalDocs.Description),
+			}
+		}
+		tag.Name = t.Name
+		tag.Description = trimBOM(tag.Description)
+		tag.ExternalDocs = ed
+		tags = append(tags, tag)
+	}
+
 	return GenApp{
-		APIPackage:          a.ServerPackage,
-		Package:             a.Package,
-		ReceiverName:        receiver,
-		Name:                a.Name,
-		Host:                host,
-		BasePath:            basePath,
-		Schemes:             schemeOrDefault(collectedSchemes, a.DefaultScheme),
-		ExtraSchemes:        extraSchemes,
-		ExternalDocs:        sw.ExternalDocs,
-		Info:                sw.Info,
-		Consumes:            consumes,
-		Produces:            produces,
-		DefaultConsumes:     a.DefaultConsumes,
-		DefaultProduces:     a.DefaultProduces,
-		DefaultImports:      defaultImports,
-		SecurityDefinitions: security,
-		Models:              genMods,
-		Operations:          genOps,
-		OperationGroups:     opGroups,
-		Principal:           prin,
-		SwaggerJSON:         generateReadableSpec(jsonb),
-		ExcludeSpec:         a.GenOpts != nil && a.GenOpts.ExcludeSpec,
-		WithContext:         a.GenOpts != nil && a.GenOpts.WithContext,
-		GenOpts:             a.GenOpts,
+		APIPackage:           a.ServerPackage,
+		Package:              a.Package,
+		ReceiverName:         receiver,
+		Name:                 a.Name,
+		Host:                 host,
+		BasePath:             basePath,
+		Schemes:              schemeOrDefault(collectedSchemes, a.DefaultScheme),
+		ExtraSchemes:         extraSchemes,
+		ExternalDocs:         extDocs,
+		Tags:                 tags,
+		Info:                 info,
+		Consumes:             consumes,
+		Produces:             produces,
+		DefaultConsumes:      a.DefaultConsumes,
+		DefaultProduces:      a.DefaultProduces,
+		DefaultImports:       defaultImports,
+		SecurityDefinitions:  security,
+		SecurityRequirements: securityRequirements(a.SpecDoc.Spec().Security),
+		Models:               genMods,
+		Operations:           genOps,
+		OperationGroups:      opGroups,
+		Principal:            prin,
+		SwaggerJSON:          generateReadableSpec(jsonb),
+		ExcludeSpec:          a.GenOpts != nil && a.GenOpts.ExcludeSpec,
+		WithContext:          a.GenOpts != nil && a.GenOpts.WithContext,
+		GenOpts:              a.GenOpts,
 	}, nil
+}
+
+func securityRequirements(orig []map[string][]string) (result []analysis.SecurityRequirement) {
+	for _, r := range orig {
+		for k, v := range r {
+			result = append(result, analysis.SecurityRequirement{Name: k, Scopes: v})
+		}
+	}
+	return
 }
 
 // generateReadableSpec makes swagger json spec as a string instead of bytes
