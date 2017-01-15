@@ -148,7 +148,7 @@ Name | Description
   {{ range .Params }}{{ if .IsBodyParam }}  <tr>
       <td>body</td>
       <td>body</td>
-      <td>{{ .Name }}</td>
+      <td>[{{ .Name }}](#{{ dasherize .Name }})</td>
       <td></td>
       <td align="center">{{ if .Required }}✓{{ end }}</td>
       <td>{{ if .Default }}```json
@@ -191,7 +191,7 @@ Name | Description
 ### {{ .Name }}
 {{ if .Description }}
 {{ .Description }}{{ end }}
-{{ if .Properties }}#### Properties
+#### Properties
 <table>
   <thead>
     <tr>
@@ -202,20 +202,24 @@ Name | Description
     </tr>
   </thead>
   <tbody>
-{{ range .AllOf }}{{ if or (and $.IsSubType .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}    <tr>
+{{ range .AllOf }}{{ if or (and .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}    <tr>
       <td>{{ .Name }}</td>
-      <td>{{ .GoType }}</td>
+      <td>{{ if .IsComplexObject }}<a href="#{{ lower .GoType }}">{{ end }}{{ .GoType }}{{ if .IsComplexObject }}</a>{{ end }}</td>
       <td align="center">{{ if .Required }}✓{{ end }}</td>
       <td>{{ trimSpace .Description }}</td>
     </tr>
-{{ end }}{{ end }}{{ end }}
+{{ end }}{{ else }}    <tr>
+      <td></td>
+      <td>{{ if .IsComplexObject }}<a href="#{{ lower .GoType }}">{{ end }}{{ .GoType }}{{ if .IsComplexObject }}</a>{{ end }}</td>
+      <td align="center">{{ if .Required }}✓{{ end }}</td>
+      <td>{{ trimSpace .Description }}</td>
+    </tr>{{ end }}{{ end }}
 {{ range .Properties }}    <tr>
       <td>{{ .Name }}</td>
-      <td>{{ .GoType }}</td>
+      <td>{{ if .IsComplexObject }}<a href="#{{ lower .GoType }}">{{ end }}{{ .GoType }}{{ if .IsComplexObject }}</a>{{ end }}</td>
       <td align="center">{{ if .Required }}✓{{ end }}</td>
       <td>{{ trimSpace .Description }}</td>
     </tr>
 {{ end }}  </tbody>
 </table>
-{{ end }}
 {{ end }}

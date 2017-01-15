@@ -45,14 +45,6 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"hasSecure": func(arg []string) bool {
 		return swag.ContainsStringsCI(arg, "https") || swag.ContainsStringsCI(arg, "wss")
 	},
-	"stripPackage": func(str, pkg string) string {
-		parts := strings.Split(str, ".")
-		strlen := len(parts)
-		if strlen > 0 {
-			return parts[strlen-1]
-		}
-		return str
-	},
 	"dropPackage": func(str string) string {
 		parts := strings.Split(str, ".")
 		strlen := len(parts)
@@ -63,6 +55,9 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	},
 	"upper": func(str string) string {
 		return strings.ToUpper(str)
+	},
+	"lower": func(str string) string {
+		return strings.ToLower(str)
 	},
 	"contains": func(coll []string, arg string) bool {
 		for _, v := range coll {
@@ -96,6 +91,12 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"cleanPath": path.Clean,
 	"paramDocType": func(param GenParameter) string {
 		return resolvedDocType(param.SwaggerType, param.SwaggerFormat, param.Child)
+	},
+	"headerDocType": func(header GenHeader) string {
+		return resolvedDocType(header.SwaggerType, header.SwaggerFormat, header.Child)
+	},
+	"schemaDocType": func(schema GenSchema) string {
+		return resolvedDocSchemaType(schema.SwaggerType, schema.SwaggerFormat, schema.Items)
 	},
 	"docCollectionFormat": resolvedDocCollectionFormat,
 	"trimSpace":           strings.TrimSpace,
@@ -131,6 +132,25 @@ func resolvedDocType(tn, fmt string, child *GenItems) string {
 			return "[]any"
 		}
 		return "[]" + resolvedDocType(child.SwaggerType, child.SwaggerFormat, child.Child)
+	}
+	return tn
+}
+
+func resolvedDocSchemaType(tn, fmt string, child *GenSchema) string {
+	if fmt != "" {
+		if fmt == "binary" {
+			return "byte-stream"
+		}
+		if fmt == "byte" {
+			return "base64"
+		}
+		return fmt
+	}
+	if tn == "array" {
+		if child == nil {
+			return "[]any"
+		}
+		return "[]" + resolvedDocSchemaType(child.SwaggerType, child.SwaggerFormat, child.Items)
 	}
 	return tn
 }
