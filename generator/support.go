@@ -629,7 +629,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		opGroup := GenOperationGroup{
 			Name:           k,
 			Operations:     v,
-			DefaultImports: []string{filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))},
+			DefaultImports: []string{modelsPackage},
 			RootPackage:    a.APIPackage,
 			WithContext:    a.GenOpts != nil && a.GenOpts.WithContext,
 		}
