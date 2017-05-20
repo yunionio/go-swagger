@@ -13,7 +13,7 @@ go get -u -v github.com/AlekSi/gocov-xml
 go get -u -v github.com/nsf/gocode
 go get -u -v github.com/jstemmer/gotags
 go get -u -v github.com/rogpeppe/godef
-go get -u -v github.com/pquerna/ffjson
+go get -u -v github.com/mailru/easyjson/...
 go get -u -v github.com/nathany/looper
 go get -u -v github.com/kylelemons/godebug/...
 go get -u -v github.com/aktau/github-release
