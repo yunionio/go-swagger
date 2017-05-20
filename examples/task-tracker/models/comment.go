@@ -16,6 +16,11 @@ import (
 // Users can comment on issues to discuss plans for resolution etc.
 //
 // swagger:model Comment
+
+func NewComment() *Comment {
+	return &Comment{}
+}
+
 type Comment struct {
 
 	// The content of the comment.

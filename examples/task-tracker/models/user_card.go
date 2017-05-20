@@ -16,6 +16,11 @@ import (
 // This representation of a user is mainly meant for inclusion in other models, or for list views.
 //
 // swagger:model UserCard
+
+func NewUserCard() *UserCard {
+	return &UserCard{}
+}
+
 type UserCard struct {
 
 	// When true this user is an admin.

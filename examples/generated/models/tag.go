@@ -12,6 +12,11 @@ import (
 
 // Tag tag
 // swagger:model Tag
+
+func NewTag() *Tag {
+	return &Tag{}
+}
+
 type Tag struct {
 
 	// id

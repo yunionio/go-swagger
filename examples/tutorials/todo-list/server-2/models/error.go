@@ -13,6 +13,11 @@ import (
 
 // Error error
 // swagger:model error
+
+func NewError() *Error {
+	return &Error{}
+}
+
 type Error struct {
 
 	// code

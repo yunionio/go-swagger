@@ -137,7 +137,7 @@ func TestEnum_SliceThing(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var sliceThingEnum []interface{}", res)
-					assertInCode(t, k+") validateSliceThingEnum(path, location string, value []string)", res)
+					assertInCode(t, k+") validateSliceThingEnum(path, location string, value SliceThing)", res)
 					assertInCode(t, "m.validateSliceThingEnum(\"\", \"body\", m)", res)
 				}
 			}
@@ -161,7 +161,7 @@ func TestEnum_SliceAndItemsThing(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var sliceAndItemsThingEnum []interface{}", res)
-					assertInCode(t, k+") validateSliceAndItemsThingEnum(path, location string, value []string)", res)
+					assertInCode(t, k+") validateSliceAndItemsThingEnum(path, location string, value SliceAndItemsThing)", res)
 					assertInCode(t, "m.validateSliceAndItemsThingEnum(\"\", \"body\", m)", res)
 					assertInCode(t, "var sliceAndItemsThingItemsEnum []interface{}", res)
 					assertInCode(t, k+") validateSliceAndItemsThingItemsEnum(path, location string, value string)", res)

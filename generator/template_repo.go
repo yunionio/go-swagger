@@ -93,6 +93,14 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	},
 	"inspect":   pretty.Sprint,
 	"cleanPath": path.Clean,
+	"sumInt": func(values ...int) int {
+		var res int
+		for _, v := range values {
+			res += v
+		}
+		return res
+	},
+	"noProperties": noProperties,
 }
 
 func init() {
@@ -114,6 +122,7 @@ var assets = map[string][]byte{
 	"schemabody.gotmpl":                     MustAsset("templates/schemabody.gotmpl"),
 	"schema.gotmpl":                         MustAsset("templates/schema.gotmpl"),
 	"schemavalidator.gotmpl":                MustAsset("templates/schemavalidator.gotmpl"),
+	"schemaserializer.gotmpl":               MustAsset("templates/schemaserializer.gotmpl"),
 	"model.gotmpl":                          MustAsset("templates/model.gotmpl"),
 	"header.gotmpl":                         MustAsset("templates/header.gotmpl"),
 	"swagger_json_embed.gotmpl":             MustAsset("templates/swagger_json_embed.gotmpl"),
@@ -446,4 +455,85 @@ func (t *Repository) DumpTemplates() {
 		}
 		fmt.Println("\n---")
 	}
+}
+
+func noProperties(value interface{}) int {
+	if swag.IsZero(value) {
+		return 0
+	}
+
+	var sch *GenSchema
+	switch tpe := value.(type) {
+	case GenSchema:
+		sch = &tpe
+	case *GenSchema:
+		sch = tpe
+	case GenDefinition:
+		sch = &tpe.GenSchema
+	case *GenDefinition:
+		sch = &tpe.GenSchema
+	case []GenSchema:
+		var i int
+		for _, v := range tpe {
+			i += noProperties(v)
+		}
+		return i
+	case []*GenSchema:
+		var i int
+		for _, v := range tpe {
+			i += noProperties(v)
+		}
+		return i
+	case map[string]GenSchema:
+		var i int
+		for _, v := range tpe {
+			i += noProperties(v)
+		}
+		return i
+	case map[string]*GenSchema:
+		var i int
+		for _, v := range tpe {
+			i += noProperties(v)
+		}
+		return i
+	case []GenDefinition:
+		var i int
+		for _, v := range tpe {
+			i += noProperties(v)
+		}
+		return i
+	case []*GenDefinition:
+		var i int
+		for _, v := range tpe {
+			i += noProperties(v)
+		}
+		return i
+	case map[string]GenDefinition:
+		var i int
+		for _, v := range tpe {
+			i += noProperties(v)
+		}
+		return i
+	case map[string]*GenDefinition:
+		var i int
+		for _, v := range tpe {
+			i += noProperties(v)
+		}
+		return i
+	default:
+		log.Printf("unknown schema type (%T)", tpe)
+	}
+	if sch == nil {
+		return 0
+	}
+
+	result := len(sch.Properties)
+	result += noProperties(sch.AllOf)
+	if sch.HasAdditionalProperties {
+		result++
+	}
+	if sch.HasAdditionalItems {
+		result++
+	}
+	return result
 }

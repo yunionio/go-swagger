@@ -811,7 +811,7 @@ func TestGenerateModel_Notables(t *testing.T) {
 		schema := definitions[k]
 		opts := opts()
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) && assert.Equal(t, "[]*Notable", genModel.GoType) {
+		if assert.NoError(t, err) && assert.Equal(t, "[]*Notable", genModel.AliasedType) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
@@ -819,6 +819,8 @@ func TestGenerateModel_Notables(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "type Notables []*Notable", res)
+				} else {
+					fmt.Println(string(ff))
 				}
 			}
 		}

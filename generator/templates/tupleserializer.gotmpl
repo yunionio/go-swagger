@@ -250,7 +250,7 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
    return swag.ConcatJSON(_parts...), nil
 }
 {{ end }}
-{{ define "schemaSerializer" }}
+{{ define "schemaSerializer2" }}
 {{- if .IsSubType }}
 {{ if not .HasBaseType }}
 {{ template "discriminatedSerializer" . }}{{ end}}

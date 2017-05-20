@@ -17,6 +17,11 @@ import (
 // This can be useful for filters and such.
 //
 // swagger:model Milestone
+
+func NewMilestone() *Milestone {
+	return &Milestone{}
+}
+
 type Milestone struct {
 
 	// The description of the milestone.
@@ -128,6 +133,11 @@ func (m *Milestone) UnmarshalBinary(b []byte) error {
 // This object contains counts for the remaining open issues and the amount of issues that have been closed.
 //
 // swagger:model MilestoneStats
+
+func NewMilestoneStats() *MilestoneStats {
+	return &MilestoneStats{}
+}
+
 type MilestoneStats struct {
 
 	// The closed issues.

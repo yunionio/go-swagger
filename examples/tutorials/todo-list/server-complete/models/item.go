@@ -13,6 +13,11 @@ import (
 
 // Item item
 // swagger:model item
+
+func NewItem() *Item {
+	return &Item{}
+}
+
 type Item struct {
 
 	// completed

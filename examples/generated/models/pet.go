@@ -15,6 +15,11 @@ import (
 
 // Pet pet
 // swagger:model Pet
+
+func NewPet() *Pet {
+	return &Pet{}
+}
+
 type Pet struct {
 
 	// category

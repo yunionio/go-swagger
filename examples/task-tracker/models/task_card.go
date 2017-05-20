@@ -19,6 +19,11 @@ import (
 // A task card is a minimalistic representation of a task. Useful for display in list views, like a card list.
 //
 // swagger:model TaskCard
+
+func NewTaskCard() *TaskCard {
+	return &TaskCard{}
+}
+
 type TaskCard struct {
 
 	// assigned to

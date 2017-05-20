@@ -8,6 +8,10 @@
 // Read Only: true
 {{- end }}
 
+{{- if .Default }}
+// Default: {{ printf "%#v" .Default }}
+{{- end }}
+
 {{- if .Maximum }}
 // Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}
 {{- end }}

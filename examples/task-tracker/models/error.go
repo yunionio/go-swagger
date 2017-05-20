@@ -17,6 +17,11 @@ import (
 // Some properties are optional so might be empty most of the time
 //
 // swagger:model Error
+
+func NewError() *Error {
+	return &Error{}
+}
+
 type Error struct {
 
 	// the error code, this is not necessarily the http status code

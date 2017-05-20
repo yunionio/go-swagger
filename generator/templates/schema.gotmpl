@@ -89,7 +89,30 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
   return nil, errors.New(422, "invalid {{ .DiscriminatorField }} value: %q", getType.{{ pascalize .DiscriminatorField }})
 
 }
-{{ else }}{{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ if .Name }}type {{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }} {{ end }}{{ template "schemaBody" . }}
+{{ else }}{{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ if .Name }}{{/* const ( {{ $structName := (pascalize .Name) }}
+  {{ range $index, $prop := .AllOf }}{{ if or (and $.IsSubType .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}is{{ $structName }}_AllOf{{ $index }}Field{{ pascalize .Name }}Nullable bool = {{ .IsNullable }}
+  {{ end }}{{ end }}{{ if .AdditionalProperties }}is{{ $structName }}_AllOf{{ $index }}Field{{  pascalize .AdditionalProperties.Name  }}Nullable = {{ .AdditionalProperties.IsNullable }}
+  {{ end }}{{ if .AdditionalItems }}is{{ $structName }}_AllOf{{ $index }}Field{{  pascalize .AdditionalItems.Name  }}Nullable = {{ .AdditionalItems.IsNullable }}
+  {{ end }}{{ end }}{{ range .Properties }}is{{ $structName }}_Field{{ pascalize .Name }}Nullable bool = {{ .IsNullable }}
+  {{ end }}{{ if .AdditionalProperties }}is{{ $structName }}_Field{{  pascalize .AdditionalProperties.Name  }}Nullable = {{ .AdditionalProperties.IsNullable }}
+  {{ end }}{{ if .AdditionalItems }}is{{ $structName }}_Field{{  pascalize .AdditionalItems.Name  }}Nullable = {{ .AdditionalItems.IsNullable }}
+  {{ end }}
+)
+*/}}
+
+func New{{ pascalize .Name }}() *{{ pascalize .Name }} {
+  return &{{ pascalize .Name }}{
+    {{ range $index, $prop := .AllOf }}{{ if or (and $.IsSubType .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}{{ if and .Default (ne $.DiscriminatorField .Name) }}{{ if or (not $.IsExported) (and $.IsSubType .IsBaseType) }}{{ camelize .Name}}Field{{ else }}{{ pascalize .Name}}{{ end}}: {{ printf "%#v" .Default }},
+    {{ end }}{{ end }}{{ end }}{{ if .AdditionalProperties }}{{ if .AdditionalProperties.Default }}{{ pascalize .AdditionalProperties.Name }}: {{ printf "%#v" .AdditionalProperties.Default }},
+    {{ end }}{{ end }}{{ if .AdditionalItems }}{{ if .AdditionalItems.Default }}{{ pascalize .AdditionalItems.Name }}: {{ printf "%#v" .AdditionalItems.Default }},
+    {{ end }}{{ end }}{{ end }}{{ range .Properties }}{{ if and .Default (ne $.DiscriminatorField .Name) }}{{ if or (not $.IsExported) (and $.IsSubType .IsBaseType) }}{{ camelize .Name}}Field{{ else }}{{ pascalize .Name}}{{ end}}: {{ printf "%#v" .Default }},
+    {{ end }}{{ end }}{{ if .AdditionalProperties }}{{ if .AdditionalProperties.Default }}{{ pascalize .AdditionalProperties.Name }}: {{ printf "%#v" .AdditionalProperties.Default }},
+    {{ end }}{{ end }}{{ if .AdditionalItems }}{{ if .AdditionalItems.Default }}{{ pascalize .AdditionalItems.Name }}: {{ printf "%#v" .AdditionalItems.Default }},
+    {{ end }}{{ end }}
+  }
+}
+
+type {{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }} {{ end }}{{ template "schemaBody" . }}
 {{if .Default}}
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(b []byte) error {
   type {{ pascalize .Name }}Alias {{ pascalize .Name }}
@@ -104,10 +127,10 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(b []byte) error {
   return nil
 }{{end}}
 {{ else }}type {{ pascalize .Name }} {{ template "typeSchemaType" . }}
-{{ end -}}{{ if .IsSubType }}
-{{ range .AllOf }}
+{{ end -}}
+{{ if .IsSubType }}{{ range .AllOf }}
 {{ range .Properties }}
-{{ if .IsBaseType }}func ({{$.ReceiverName}} *{{ pascalize $.Name}}) {{ pascalize .Name}}() {{ template "schemaType" . }}{
+{{ if .IsBaseType }}func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) {{ pascalize .Name }}() {{ template "schemaType" . }}{
   {{ if eq $.DiscriminatorField .Name }}return {{ printf "%q" $.DiscriminatorValue }}{{ else }}return {{ $.ReceiverName }}.{{camelize .Name}}Field{{end}}
 }
 func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ template "schemaType" . }}) {
@@ -123,7 +146,7 @@ func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ 
   // {{ template "docstring" .AdditionalItems }}
   {{- template "propertyValidationDocString" .AdditionalItems}}
 {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
-{{ end }}{{ end }}{{ template "schemaSerializer" . }}{{ end }}{{ if .IncludeValidator }}{{if and (not .IsInterface) (not .IsBaseType) (or .Required .HasValidations .HasBaseType) }}
+{{ end }}{{ end }}{{ template "schemaSerializer2" . }}{{ end }}{{ if .IncludeValidator }}{{if and (not .IsInterface) (not .IsBaseType) (or .Required .HasValidations .HasBaseType) }}
 {{ template "schemavalidator" . }}
 {{ else if gt (len .AllOf) 0 }}
 {{ template "schemavalidator" . }}

@@ -12,6 +12,11 @@ import (
 
 // Order order
 // swagger:model Order
+
+func NewOrder() *Order {
+	return &Order{}
+}
+
 type Order struct {
 
 	// complete

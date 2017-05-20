@@ -12,6 +12,11 @@ import (
 
 // Category category
 // swagger:model Category
+
+func NewCategory() *Category {
+	return &Category{}
+}
+
 type Category struct {
 
 	// id

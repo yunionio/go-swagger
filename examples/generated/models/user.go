@@ -12,6 +12,11 @@ import (
 
 // User user
 // swagger:model User
+
+func NewUser() *User {
+	return &User{}
+}
+
 type User struct {
 
 	// email

@@ -2,6 +2,7 @@ package generator_test
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,6 +31,8 @@ func TestGenerateAndBuild(t *testing.T) {
 			}
 			defer os.RemoveAll(generated)
 
+			log.SetOutput(ioutil.Discard)
+			defer log.SetOutput(os.Stderr)
 			err = newTestClient(spec, generated).Execute(nil)
 			if err != nil {
 				t.Fatalf("Execute()=%s", err)

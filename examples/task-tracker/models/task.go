@@ -18,6 +18,11 @@ import (
 // A Task is the main entity in this application. Everything revolves around tasks and managing them.
 //
 // swagger:model Task
+
+func NewTask() *Task {
+	return &Task{}
+}
+
 type Task struct {
 	TaskCard
 
@@ -270,6 +275,11 @@ func (m *Task) UnmarshalBinary(b []byte) error {
 
 // TaskAttachmentsAnon task attachments anon
 // swagger:model TaskAttachmentsAnon
+
+func NewTaskAttachmentsAnon() *TaskAttachmentsAnon {
+	return &TaskAttachmentsAnon{}
+}
+
 type TaskAttachmentsAnon struct {
 
 	// The content type of the file.

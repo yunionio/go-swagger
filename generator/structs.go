@@ -74,6 +74,10 @@ type GenSchema struct {
 	Parents                 []string
 	IncludeValidator        bool
 	IncludeModel            bool
+	JSONOut                 string
+	JSONIn                  string
+	ZeroValue               string
+	PropLen                 int
 	Default                 interface{}
 }
 
