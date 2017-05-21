@@ -13,11 +13,6 @@ import (
 
 // Item item
 // swagger:model item
-
-func NewItem() *Item {
-	return &Item{}
-}
-
 type Item struct {
 
 	// completed
@@ -31,6 +26,10 @@ type Item struct {
 	// id
 	// Read Only: true
 	ID int64 `json:"id,omitempty"`
+}
+
+func NewItem() *Item {
+	return &Item{}
 }
 
 // Validate validates this item

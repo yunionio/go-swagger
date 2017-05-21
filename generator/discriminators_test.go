@@ -35,6 +35,17 @@ func opts() *GenOpts {
 	return &opts
 }
 
+func uopts() *GenOpts {
+	var opts GenOpts
+	opts.IncludeValidator = true
+	opts.IncludeModel = true
+	opts.DistinguishNullUnset = true
+	if err := opts.EnsureDefaults(false); err != nil {
+		panic(err)
+	}
+	return &opts
+}
+
 func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {

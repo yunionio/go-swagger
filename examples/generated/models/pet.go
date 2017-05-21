@@ -15,11 +15,6 @@ import (
 
 // Pet pet
 // swagger:model Pet
-
-func NewPet() *Pet {
-	return &Pet{}
-}
-
 type Pet struct {
 
 	// category
@@ -41,6 +36,10 @@ type Pet struct {
 
 	// tags
 	Tags []*Tag `json:"tags"`
+}
+
+func NewPet() *Pet {
+	return &Pet{}
 }
 
 // Validate validates this pet

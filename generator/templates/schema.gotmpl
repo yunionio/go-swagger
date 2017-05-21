@@ -89,7 +89,9 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
   return nil, errors.New(422, "invalid {{ .DiscriminatorField }} value: %q", getType.{{ pascalize .DiscriminatorField }})
 
 }
-{{ else }}{{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ if .Name }}{{/* const ( {{ $structName := (pascalize .Name) }}
+{{ else }}{{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ if .Name }}type {{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }} {{ end }}{{ template "schemaBody" . }}
+
+{{ if .DistinguishNullUnset }}const ( {{ $structName := (pascalize .Name) }}
   {{ range $index, $prop := .AllOf }}{{ if or (and $.IsSubType .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}is{{ $structName }}_AllOf{{ $index }}Field{{ pascalize .Name }}Nullable bool = {{ .IsNullable }}
   {{ end }}{{ end }}{{ if .AdditionalProperties }}is{{ $structName }}_AllOf{{ $index }}Field{{  pascalize .AdditionalProperties.Name  }}Nullable = {{ .AdditionalProperties.IsNullable }}
   {{ end }}{{ if .AdditionalItems }}is{{ $structName }}_AllOf{{ $index }}Field{{  pascalize .AdditionalItems.Name  }}Nullable = {{ .AdditionalItems.IsNullable }}
@@ -98,9 +100,8 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
   {{ end }}{{ if .AdditionalItems }}is{{ $structName }}_Field{{  pascalize .AdditionalItems.Name  }}Nullable = {{ .AdditionalItems.IsNullable }}
   {{ end }}
 )
-*/}}
 
-func New{{ pascalize .Name }}() *{{ pascalize .Name }} {
+{{ end }}func New{{ pascalize .Name }}() *{{ pascalize .Name }} {
   return &{{ pascalize .Name }}{
     {{ range $index, $prop := .AllOf }}{{ if or (and $.IsSubType .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}{{ if and .Default (ne $.DiscriminatorField .Name) }}{{ if or (not $.IsExported) (and $.IsSubType .IsBaseType) }}{{ camelize .Name}}Field{{ else }}{{ pascalize .Name}}{{ end}}: {{ printf "%#v" .Default }},
     {{ end }}{{ end }}{{ end }}{{ if .AdditionalProperties }}{{ if .AdditionalProperties.Default }}{{ pascalize .AdditionalProperties.Name }}: {{ printf "%#v" .AdditionalProperties.Default }},
@@ -112,7 +113,6 @@ func New{{ pascalize .Name }}() *{{ pascalize .Name }} {
   }
 }
 
-type {{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }} {{ end }}{{ template "schemaBody" . }}
 {{if .Default}}
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(b []byte) error {
   type {{ pascalize .Name }}Alias {{ pascalize .Name }}
@@ -146,7 +146,7 @@ func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ 
   // {{ template "docstring" .AdditionalItems }}
   {{- template "propertyValidationDocString" .AdditionalItems}}
 {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
-{{ end }}{{ end }}{{ template "schemaSerializer2" . }}{{ end }}{{ if .IncludeValidator }}{{if and (not .IsInterface) (not .IsBaseType) (or .Required .HasValidations .HasBaseType) }}
+{{ end }}{{ end }}{{ if .DistinguishNullUnset }}{{ template "modelSerializer" . }}{{ else }}{{ template "schemaSerializer2" . }}{{ end }}{{ end }}{{ if .IncludeValidator }}{{if and (not .IsInterface) (not .IsBaseType) (or .Required .HasValidations .HasBaseType) }}
 {{ template "schemavalidator" . }}
 {{ else if gt (len .AllOf) 0 }}
 {{ template "schemavalidator" . }}
@@ -173,4 +173,61 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalBinary(b []byte) error 
   return nil
 }
 {{ end -}}
+{{ if .DistinguishNullUnset }}{{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ if .Name }}{{ range .Properties }}
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Mark{{ pascalize .Name}}Set() {
+	{{ $.ReceiverName }}.is{{ pascalize .Name }}FieldSet = true
+}
 
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Mark{{ pascalize .Name}}Unset() {
+	{{ $.ReceiverName }}.is{{ pascalize .Name }}FieldSet = false
+}
+
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Mark{{ pascalize .Name}}Nil() {
+	if is{{ pascalize $.Name }}_Field{{ pascalize .Name }}Nullable {
+		{{ $.ReceiverName }}.is{{ pascalize .Name}}FieldNil = true
+	}
+}
+
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Mark{{ pascalize .Name}}Zero() {
+	if is{{ pascalize $.Name }}_Field{{ pascalize .Name }}Nullable {
+		{{ $.ReceiverName }}.is{{ pascalize .Name}}FieldNil = false
+	}
+}
+
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Is{{ pascalize .Name}}Nil() bool {
+	return is{{ pascalize $.Name }}_Field{{ pascalize .Name }}Nullable && {{ $.ReceiverName }}.is{{ pascalize .Name}}FieldNil
+}
+
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Is{{ pascalize .Name}}Set() bool {
+	return {{ $.ReceiverName }}.is{{ pascalize .Name}}FieldSet || !swag.IsZero({{ .ValueExpression }})
+}
+
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Has{{ pascalize .Name}}Value() bool {
+	return {{ $.ReceiverName }}.Is{{ pascalize .Name }}Set() && !{{ $.ReceiverName }}.Is{{ pascalize .Name}}Nil()
+}
+
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Set{{ pascalize .Name}}(value {{ template "schemaType" . }}) {
+	{{ $.ReceiverName }}.Mark{{ pascalize .Name}}Set()
+  {{ if .IsNullable }}if value == nil {
+    {{ $.ReceiverName }}.Mark{{ pascalize .Name}}Nil()
+		{{ $.ReceiverName }}.{{ pascalize .Name}} = {{ if .IsNullable }}nil{{ else }}{{ .Zero }}{{ end }}
+		return
+	}
+	{{ end }}{{ $.ReceiverName }}.{{ pascalize .Name}} = {{ if .IsNullable }}*{{ end }}value
+}
+
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Clear{{ pascalize .Name}}() {
+	{{ $.ReceiverName }}.Mark{{ pascalize .Name}}Nil()
+}
+
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Get{{ pascalize .Name}}() (value {{ template "schemaType" . }}, null bool, haskey bool) {
+	return {{ .ValueExpression }}, {{ $.ReceiverName }}.Is{{ pascalize .Name }}Nil(), {{ $.ReceiverName }}.Is{{ pascalize .Name }}Set()
+}
+
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Get{{ pascalize .Name}}Ptr() *{{ template "dereffedSchemaType" . }} {
+	if !{{ $.ReceiverName }}.Has{{ pascalize .Name}}Value() {
+		return nil
+	}
+	return &{{ $.ReceiverName }}.{{ pascalize .Name}}
+}
+{{ end }}{{ end }}{{ end }}{{ end -}}

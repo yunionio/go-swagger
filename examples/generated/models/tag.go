@@ -12,11 +12,6 @@ import (
 
 // Tag tag
 // swagger:model Tag
-
-func NewTag() *Tag {
-	return &Tag{}
-}
-
 type Tag struct {
 
 	// id
@@ -24,6 +19,10 @@ type Tag struct {
 
 	// name
 	Name string `json:"name,omitempty"`
+}
+
+func NewTag() *Tag {
+	return &Tag{}
 }
 
 // Validate validates this tag

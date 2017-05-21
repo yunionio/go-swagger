@@ -72,11 +72,6 @@ func (o *AddCommentToTask) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 // These values can have github flavored markdown.
 //
 // swagger:model AddCommentToTaskBody
-
-func NewAddCommentToTaskBody() *AddCommentToTaskBody {
-	return &AddCommentToTaskBody{}
-}
-
 type AddCommentToTaskBody struct {
 
 	// content
@@ -86,6 +81,10 @@ type AddCommentToTaskBody struct {
 	// user Id
 	// Required: true
 	UserID *int64 `json:"userId"`
+}
+
+func NewAddCommentToTaskBody() *AddCommentToTaskBody {
+	return &AddCommentToTaskBody{}
 }
 
 // MarshalBinary interface implementation

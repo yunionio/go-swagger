@@ -12,11 +12,6 @@ import (
 
 // User user
 // swagger:model User
-
-func NewUser() *User {
-	return &User{}
-}
-
 type User struct {
 
 	// email
@@ -42,6 +37,10 @@ type User struct {
 
 	// username
 	Username string `json:"username,omitempty"`
+}
+
+func NewUser() *User {
+	return &User{}
 }
 
 // Validate validates this user

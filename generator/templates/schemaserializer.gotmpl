@@ -278,7 +278,7 @@ for !in.IsDelim('}') {
   if in.IsNull() {
     switch key {
     {{ range $index, $prop := .Properties }}
-    case {{ printf "%q" $prop.Name }}:
+    case {{ printf "%q" $prop.OriginalName }}:
       {{ $prop.ValueExpression }} = {{ if or $prop.IsNullable $prop.IsArray $prop.IsMap $prop.IsAdditionalProperties }}nil{{ else }}{{ $prop.Zero }}{{ end }}
       {{ $.ReceiverName }}.is{{ pascalize $prop.Name }}FieldSet = true
       {{ $.ReceiverName }}.is{{ pascalize $prop.Name }}FieldNil = true
@@ -297,7 +297,7 @@ for !in.IsDelim('}') {
   }
   switch key {
   {{ range $index, $prop := .Properties }}
-  case {{ printf "%q" $prop.Name }}:
+  case {{ printf "%q" $prop.OriginalName }}:
     if {{ camelize $prop.Name }}Value, err := {{ $.ReceiverName }}.{{ camelize $prop.Name }}{{ pascalize .IndexVar }}ReadJSON(in); err != nil {
       in.AddError(err)
     } else {
@@ -335,7 +335,7 @@ if {{ $.ReceiverName }}.Has{{ pascalize $prop.Name }}Value() {
     out.RawByte(',')
   }
   first = false
-  out.String({{ printf "%q" $prop.Name }})
+  out.String({{ printf "%q" $prop.OriginalName }})
   out.RawByte(':')
   {{ if $prop.IsNullable }}if {{ $.ReceiverName }}.Is{{ pascalize $prop.Name }}Nil() {
     out.RawString("null")

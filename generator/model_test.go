@@ -161,7 +161,7 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 	gmp.CustomTag = "mytag:\"foobar,foobaz\""
 
 	tt.assertRender(gmp, `// The title of the property
-`+"SomeName string `json:\"some name,omitempty\" mytag:\"foobar,foobaz\"`\n")
+`+"SomeName string `json:\"some name,omitempty\" mytag:\"foobar,foobaz\"`\n\n")
 
 	var fl float64 = 10
 	var in1 int64 = 20
@@ -180,6 +180,7 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 	gmp.MinItems = &in2
 	gmp.UniqueItems = true
 	gmp.ReadOnly = true
+	gmp.DistinguishNullUnset = true
 	tt.assertRender(gmp, `// The title of the property
 //
 // The description of the property
@@ -193,7 +194,7 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 // Max Items: 30
 // Min Items: 30
 // Unique: true
-`+"SomeName string `json:\"some name\" mytag:\"foobar,foobaz\"`\n")
+`+"SomeName string `json:\"some name\" mytag:\"foobar,foobaz\"`\n\nisSomeNameFieldNil bool `json:\"-\"`\nisSomeNameFieldSet bool `json:\"-\"`")
 }
 
 var schTypeGenDataSimple = []struct {
@@ -1959,7 +1960,7 @@ func TestGenModel_Issue981(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "User"
-		opts := opts()
+		opts := uopts()
 		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
@@ -1968,7 +1969,7 @@ func TestGenModel_Issue981(t *testing.T) {
 				ct, err := opts.LanguageOpts.FormatContent("user.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					fmt.Println(res)
+					// fmt.Println(res)
 					assertInCode(t, "FirstName string `json:\"first_name,omitempty\"`", res)
 					assertInCode(t, "LastName string `json:\"last_name,omitempty\"`", res)
 					assertInCode(t, "if swag.IsZero(m.Type)", res)

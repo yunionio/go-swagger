@@ -12,11 +12,6 @@ import (
 
 // Category category
 // swagger:model Category
-
-func NewCategory() *Category {
-	return &Category{}
-}
-
 type Category struct {
 
 	// id
@@ -24,6 +19,10 @@ type Category struct {
 
 	// name
 	Name string `json:"name,omitempty"`
+}
+
+func NewCategory() *Category {
+	return &Category{}
 }
 
 // Validate validates this category

@@ -13,11 +13,6 @@ import (
 
 // Error error
 // swagger:model error
-
-func NewError() *Error {
-	return &Error{}
-}
-
 type Error struct {
 
 	// code
@@ -26,6 +21,10 @@ type Error struct {
 	// message
 	// Required: true
 	Message *string `json:"message"`
+}
+
+func NewError() *Error {
+	return &Error{}
 }
 
 // Validate validates this error

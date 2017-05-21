@@ -12,11 +12,6 @@ import (
 
 // Order order
 // swagger:model Order
-
-func NewOrder() *Order {
-	return &Order{}
-}
-
 type Order struct {
 
 	// complete
@@ -36,6 +31,10 @@ type Order struct {
 
 	// Order Status
 	Status string `json:"status,omitempty"`
+}
+
+func NewOrder() *Order {
+	return &Order{}
 }
 
 // Validate validates this order

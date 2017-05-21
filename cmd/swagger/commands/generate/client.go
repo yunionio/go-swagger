@@ -25,17 +25,18 @@ import (
 // Client the command to generate a swagger client
 type Client struct {
 	shared
-	Name            string   `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
-	Operations      []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
-	Tags            []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
-	Principal       string   `long:"principal" short:"P" description:"the model to use for the security principal"`
-	Models          []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
-	DefaultScheme   string   `long:"default-scheme" description:"the default scheme for this client" default:"http"`
-	DefaultProduces string   `long:"default-produces" description:"the default mime type that API operations produce" default:"application/json"`
-	SkipModels      bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
-	SkipOperations  bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
-	DumpData        bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
-	SkipValidation  bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
+	Name                 string   `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
+	Operations           []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
+	Tags                 []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
+	Principal            string   `long:"principal" short:"P" description:"the model to use for the security principal"`
+	Models               []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
+	DefaultScheme        string   `long:"default-scheme" description:"the default scheme for this client" default:"http"`
+	DefaultProduces      string   `long:"default-produces" description:"the default mime type that API operations produce" default:"application/json"`
+	SkipModels           bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
+	SkipOperations       bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
+	DumpData             bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	SkipValidation       bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
+	DistinguishNullUnset bool     `long:"distinguish-null-unset" description:"renders custom serializers and distinguishes between null and unset values"`
 }
 
 // Execute runs this command
@@ -53,24 +54,25 @@ func (c *Client) Execute(args []string) error {
 	opts := &generator.GenOpts{
 		Spec: string(c.Spec),
 
-		Target:            string(c.Target),
-		APIPackage:        c.APIPackage,
-		ModelPackage:      c.ModelPackage,
-		ServerPackage:     c.ServerPackage,
-		ClientPackage:     c.ClientPackage,
-		Principal:         c.Principal,
-		DefaultScheme:     c.DefaultScheme,
-		DefaultProduces:   c.DefaultProduces,
-		IncludeModel:      !c.SkipModels,
-		IncludeValidator:  !c.SkipModels,
-		IncludeHandler:    !c.SkipOperations,
-		IncludeParameters: !c.SkipOperations,
-		IncludeResponses:  !c.SkipOperations,
-		ValidateSpec:      !c.SkipValidation,
-		Tags:              c.Tags,
-		IncludeSupport:    true,
-		TemplateDir:       string(c.TemplateDir),
-		DumpData:          c.DumpData,
+		Target:               string(c.Target),
+		APIPackage:           c.APIPackage,
+		ModelPackage:         c.ModelPackage,
+		ServerPackage:        c.ServerPackage,
+		ClientPackage:        c.ClientPackage,
+		Principal:            c.Principal,
+		DefaultScheme:        c.DefaultScheme,
+		DefaultProduces:      c.DefaultProduces,
+		IncludeModel:         !c.SkipModels,
+		IncludeValidator:     !c.SkipModels,
+		IncludeHandler:       !c.SkipOperations,
+		IncludeParameters:    !c.SkipOperations,
+		IncludeResponses:     !c.SkipOperations,
+		ValidateSpec:         !c.SkipValidation,
+		Tags:                 c.Tags,
+		IncludeSupport:       true,
+		TemplateDir:          string(c.TemplateDir),
+		DumpData:             c.DumpData,
+		DistinguishNullUnset: c.DistinguishNullUnset,
 	}
 
 	if err := opts.EnsureDefaults(true); err != nil {

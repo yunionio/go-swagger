@@ -17,11 +17,6 @@ import (
 // This can be useful for filters and such.
 //
 // swagger:model Milestone
-
-func NewMilestone() *Milestone {
-	return &Milestone{}
-}
-
 type Milestone struct {
 
 	// The description of the milestone.
@@ -48,6 +43,10 @@ type Milestone struct {
 
 	// stats
 	Stats *MilestoneStats `json:"stats,omitempty"`
+}
+
+func NewMilestone() *Milestone {
+	return &Milestone{}
 }
 
 // Validate validates this milestone
@@ -133,11 +132,6 @@ func (m *Milestone) UnmarshalBinary(b []byte) error {
 // This object contains counts for the remaining open issues and the amount of issues that have been closed.
 //
 // swagger:model MilestoneStats
-
-func NewMilestoneStats() *MilestoneStats {
-	return &MilestoneStats{}
-}
-
 type MilestoneStats struct {
 
 	// The closed issues.
@@ -148,6 +142,10 @@ type MilestoneStats struct {
 
 	// The total number of issues for this milestone.
 	Total int32 `json:"total,omitempty"`
+}
+
+func NewMilestoneStats() *MilestoneStats {
+	return &MilestoneStats{}
 }
 
 // Validate validates this milestone stats

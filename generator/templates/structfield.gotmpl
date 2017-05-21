@@ -12,7 +12,10 @@
 {{- end }}"
 {{- if .XMLName }} xml:"{{ .XMLName }}"{{ end }}
 {{- if .CustomTag }} {{ .CustomTag }}{{ end }}`
-{{ end }}
+
+{{ if .DistinguishNullUnset -}}
+is{{ pascalize .Name }}FieldNil bool `json:"-"`
+is{{ pascalize .Name }}FieldSet bool `json:"-"`{{ end }}{{ end }}
 
 {{- define "tuplefield" }}
   {{- if not $.IsBaseType -}}
@@ -21,7 +24,11 @@
 {{ end }}
 {{- pascalize .Name}} {{ template "schemaType" . }} `json:"-"
 {{- if .CustomTag }} {{ .CustomTag }}{{ end }}` // custom serializer
-{{ end }}
+
+{{ if .DistinguishNullUnset -}}
+  is{{ pascalize .Name }}FieldNil bool `json:"-"`
+  is{{ pascalize .Name }}FieldSet bool `json:"-"`
+{{- end }}{{ end }}
 
 {{- define "structfieldIface" }}
   {{- if not $.IsBaseType -}}
@@ -42,8 +49,15 @@ Set{{ pascalize .Name}}({{ template "schemaType" . }})
 
 {{- define "privstructfield" }}
   {{- camelize .Name}}Field {{ template "schemaType" . }}
-{{ end }}
+
+{{ if .DistinguishNullUnset -}}
+  is{{ pascalize .Name }}FieldNil bool `json:"-"`
+  is{{ pascalize .Name }}FieldSet bool `json:"-"`{{ end }}{{ end }}
 
 {{- define "privtuplefield" }}
   {{- camelize .Name}}Field {{ template "schemaType" . }}
-{{ end }}
+
+{{ if .DistinguishNullUnset -}}
+  is{{ pascalize .Name }}FieldNil bool `json:"-"`
+  is{{ pascalize .Name }}FieldSet bool `json:"-"`{{ end }}
+{{- end }}

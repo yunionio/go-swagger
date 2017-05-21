@@ -18,11 +18,6 @@ import (
 // A Task is the main entity in this application. Everything revolves around tasks and managing them.
 //
 // swagger:model Task
-
-func NewTask() *Task {
-	return &Task{}
-}
-
 type Task struct {
 	TaskCard
 
@@ -52,6 +47,10 @@ type Task struct {
 
 	// reported by
 	ReportedBy *UserCard `json:"reportedBy,omitempty"`
+}
+
+func NewTask() *Task {
+	return &Task{}
 }
 
 // UnmarshalJSON unmarshals this object from a JSON structure
@@ -275,11 +274,6 @@ func (m *Task) UnmarshalBinary(b []byte) error {
 
 // TaskAttachmentsAnon task attachments anon
 // swagger:model TaskAttachmentsAnon
-
-func NewTaskAttachmentsAnon() *TaskAttachmentsAnon {
-	return &TaskAttachmentsAnon{}
-}
-
 type TaskAttachmentsAnon struct {
 
 	// The content type of the file.
@@ -315,6 +309,10 @@ type TaskAttachmentsAnon struct {
 	//
 	// Read Only: true
 	URL strfmt.URI `json:"url,omitempty"`
+}
+
+func NewTaskAttachmentsAnon() *TaskAttachmentsAnon {
+	return &TaskAttachmentsAnon{}
 }
 
 // Validate validates this task attachments anon

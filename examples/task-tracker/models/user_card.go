@@ -16,11 +16,6 @@ import (
 // This representation of a user is mainly meant for inclusion in other models, or for list views.
 //
 // swagger:model UserCard
-
-func NewUserCard() *UserCard {
-	return &UserCard{}
-}
-
 type UserCard struct {
 
 	// When true this user is an admin.
@@ -60,6 +55,10 @@ type UserCard struct {
 	// Min Length: 3
 	// Pattern: \w[\w_-]+
 	ScreenName *string `json:"screenName"`
+}
+
+func NewUserCard() *UserCard {
+	return &UserCard{}
 }
 
 // Validate validates this user card

@@ -148,20 +148,21 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	di := discriminatorInfo(analyzed)
 
 	pg := schemaGenContext{
-		Path:             "",
-		Name:             name,
-		Receiver:         receiver,
-		IndexVar:         "i",
-		ValueExpr:        receiver,
-		Schema:           schema,
-		Required:         false,
-		TypeResolver:     resolver,
-		Named:            true,
-		ExtraSchemas:     make(map[string]GenSchema),
-		Discrimination:   di,
-		Container:        container,
-		IncludeValidator: opts.IncludeValidator,
-		IncludeModel:     opts.IncludeModel,
+		Path:                 "",
+		Name:                 name,
+		Receiver:             receiver,
+		IndexVar:             "i",
+		ValueExpr:            receiver,
+		Schema:               schema,
+		Required:             false,
+		TypeResolver:         resolver,
+		Named:                true,
+		ExtraSchemas:         make(map[string]GenSchema),
+		Discrimination:       di,
+		Container:            container,
+		IncludeValidator:     opts.IncludeValidator,
+		IncludeModel:         opts.IncludeModel,
+		DistinguishNullUnset: opts.DistinguishNullUnset,
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, err
@@ -328,16 +329,17 @@ func findImports(sch *GenSchema) map[string]string {
 }
 
 type schemaGenContext struct {
-	Required           bool
-	AdditionalProperty bool
-	Untyped            bool
-	Named              bool
-	RefHandled         bool
-	IsVirtual          bool
-	IsTuple            bool
-	IncludeValidator   bool
-	IncludeModel       bool
-	Index              int
+	Required             bool
+	AdditionalProperty   bool
+	Untyped              bool
+	Named                bool
+	RefHandled           bool
+	IsVirtual            bool
+	IsTuple              bool
+	IncludeValidator     bool
+	IncludeModel         bool
+	DistinguishNullUnset bool
+	Index                int
 
 	Path         string
 	Name         string
@@ -1008,19 +1010,20 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 	}
 	sp.Definitions[name] = schema
 	pg := schemaGenContext{
-		Path:             "",
-		Name:             name,
-		Receiver:         sg.Receiver,
-		IndexVar:         "i",
-		ValueExpr:        sg.Receiver,
-		Schema:           schema,
-		Required:         false,
-		Named:            true,
-		ExtraSchemas:     make(map[string]GenSchema),
-		Discrimination:   sg.Discrimination,
-		Container:        sg.Container,
-		IncludeValidator: sg.IncludeValidator,
-		IncludeModel:     sg.IncludeModel,
+		Path:                 "",
+		Name:                 name,
+		Receiver:             sg.Receiver,
+		IndexVar:             "i",
+		ValueExpr:            sg.Receiver,
+		Schema:               schema,
+		Required:             false,
+		Named:                true,
+		ExtraSchemas:         make(map[string]GenSchema),
+		Discrimination:       sg.Discrimination,
+		Container:            sg.Container,
+		IncludeValidator:     sg.IncludeValidator,
+		IncludeModel:         sg.IncludeModel,
+		DistinguishNullUnset: sg.DistinguishNullUnset,
 	}
 	if schema.Ref.String() == "" {
 		resolver := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
@@ -1110,7 +1113,9 @@ func (sg *schemaGenContext) buildItems() error {
 			}
 			sg.MergeResult(elProp, false)
 			elProp.GenSchema.Name = "p" + strconv.Itoa(i)
-			// elProp.GenSchema.IsNullable = sg.TypeResolver.IsNullable(&s)
+			if sg.DistinguishNullUnset {
+				elProp.GenSchema.IsNullable = sg.TypeResolver.IsNullable(&s)
+			}
 			sg.GenSchema.Properties = append(sg.GenSchema.Properties, elProp.GenSchema)
 		}
 		return nil
@@ -1341,6 +1346,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IncludeModel = sg.IncludeModel
 	sg.GenSchema.Default = sg.Schema.Default
 	sg.GenSchema.IsAliased = sg.Named
+	sg.GenSchema.DistinguishNullUnset = sg.DistinguishNullUnset
 
 	var err error
 	returns, err := sg.shortCircuitNamedRef()

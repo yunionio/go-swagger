@@ -17,11 +17,6 @@ import (
 // Some properties are optional so might be empty most of the time
 //
 // swagger:model Error
-
-func NewError() *Error {
-	return &Error{}
-}
-
 type Error struct {
 
 	// the error code, this is not necessarily the http status code
@@ -34,6 +29,10 @@ type Error struct {
 	// a human readable version of the error
 	// Required: true
 	Message *string `json:"message"`
+}
+
+func NewError() *Error {
+	return &Error{}
 }
 
 // Validate validates this error

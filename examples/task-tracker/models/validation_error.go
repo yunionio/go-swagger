@@ -12,16 +12,15 @@ import (
 
 // ValidationError validation error
 // swagger:model ValidationError
-
-func NewValidationError() *ValidationError {
-	return &ValidationError{}
-}
-
 type ValidationError struct {
 	Error
 
 	// an optional field name to which this validation error applies
 	Field string `json:"field,omitempty"`
+}
+
+func NewValidationError() *ValidationError {
+	return &ValidationError{}
 }
 
 // UnmarshalJSON unmarshals this object from a JSON structure

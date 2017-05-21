@@ -79,6 +79,7 @@ type GenSchema struct {
 	ZeroValue               string
 	PropLen                 int
 	Default                 interface{}
+	DistinguishNullUnset    bool
 }
 
 type sharedValidations struct {
