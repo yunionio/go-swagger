@@ -1183,6 +1183,56 @@ func TestSerializer_NotaWithMeta(t *testing.T) {
 	}
 }
 
+func TestSerializer_RunParameters(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "RunParameters"
+		schema := definitions[k]
+		opts := uopts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsMap)
+			assert.False(t, genModel.IsAnonymous)
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("nota_with_name.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "type "+k+" struct {", res)
+					assertInCode(t, "func (m "+k+") MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *"+k+") UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *"+k+") MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *"+k+") UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *"+k+") Validate(formats strfmt.Registry)", res)
+
+					assertInCode(t, "BranchName string `json:\"branch_name,omitempty\"`", res)
+					assertInCode(t, "out.String(\"branch_name\")", res)
+					assertInCode(t, "out.String(m.BranchName)", res)
+					assertInCode(t, "return in.String(), nil", res)
+
+					assertInCode(t, "CommitSha string `json:\"commit_sha,omitempty\"`", res)
+					assertInCode(t, "out.String(\"commit_sha\")", res)
+					assertInCode(t, "out.String(m.CommitSha)", res)
+					assertInCode(t, "Refs interface{} `json:\"refs,omitempty\"`", res)
+					assertInCode(t, "var refsValue interface{}", res)
+					assertInCode(t, "swag.ReadJSON(data, &refsValue)", res)
+					assertInCode(t, "return refsValue, nil", res)
+					assertInCode(t, "m.Refs = refsValue", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Refs))", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
 func TestSerializer_NotaWithName(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
@@ -1335,6 +1385,37 @@ func TestSerializer_NotaWithMetaRegistry(t *testing.T) {
 				}
 			} else {
 				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_JustRef(t *testing.T) {
+	t.Error("needs implementation, json methods are stubs")
+	t.FailNow()
+	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["JustRef"]
+		opts := uopts()
+		genModel, err := makeGenDefinition("JustRef", "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			assert.NotEmpty(t, genModel.AllOf)
+			assert.True(t, genModel.IsComplexObject)
+			assert.Equal(t, "JustRef", genModel.Name)
+			assert.Equal(t, "JustRef", genModel.GoType)
+			buf := bytes.NewBuffer(nil)
+			err = tt.template.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("with_ref.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					fmt.Println(res)
+					assertInCode(t, "type JustRef struct {", res)
+					assertInCode(t, "Notable", res)
+				}
 			}
 		}
 	}
