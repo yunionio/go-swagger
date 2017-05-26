@@ -53,6 +53,14 @@ var FuncMap template.FuncMap = map[string]interface{}{
 		}
 		return str
 	},
+	"stripPackage": func(str, pkg string) string {
+		parts := strings.Split(str, ".")
+		strlen := len(parts)
+		if strlen > 0 {
+			return parts[strlen-1]
+		}
+		return str
+	},
 	"upper": func(str string) string {
 		return strings.ToUpper(str)
 	},

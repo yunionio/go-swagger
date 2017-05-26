@@ -105,7 +105,7 @@ Name | Description
     </tr>
   </thead>
   <tbody>
-  {{ range .PathParams }}    <tr>
+  {{ range .PathParams }}<tr>
       <td>{{ .Name }}</td>
       <td>{{ .Location }}</td>
       <td>{{ paramDocType . }}</td>
@@ -115,7 +115,7 @@ Name | Description
       <td>{{ .Description }}</td>
     </tr>
   {{ end -}}
-  {{ range .HeaderParams }}  <tr>
+  {{ range .HeaderParams }}<tr>
       <td>{{ .Name }}</td>
       <td>{{ .Location }}</td>
       <td>{{ paramDocType . }}</td>
@@ -125,7 +125,7 @@ Name | Description
       <td>{{ .Description }}</td>
     </tr>
   {{ end -}}
-  {{ range .QueryParams }}  <tr>
+  {{ range .QueryParams }}<tr>
       <td>{{ .Name }}</td>
       <td>{{ .Location }}</td>
       <td>{{ paramDocType . }}</td>
@@ -135,7 +135,7 @@ Name | Description
       <td>{{ .Description }}</td>
     </tr>
   {{ end -}}
-  {{ range .FormParams }}  <tr>
+  {{ range .FormParams }}<tr>
       <td>{{ .Name }}</td>
       <td>{{ .Location }}</td>
       <td>{{ paramDocType . }}</td>
@@ -145,7 +145,7 @@ Name | Description
       <td>{{ .Description }}</td>
     </tr>
   {{ end -}}
-  {{ range .Params }}{{ if .IsBodyParam }}  <tr>
+  {{ range .Params }}{{ if .IsBodyParam }}<tr>
       <td>body</td>
       <td>body</td>
       <td>[{{ .Name }}](#{{ dasherize .Name }})</td>
@@ -171,12 +171,12 @@ Name | Description
     </tr>
   </thead>
   <tbody>
-{{ range .Responses }}    <tr>
+{{ range .Responses }}<tr>
       <td align="center">{{ .Code }}</td>
       <td></td>
       <td>{{ trimSpace .Description }}</td>
     </tr>
-{{ end }}{{ if .DefaultResponse }}    <tr>
+{{ end }}{{ if .DefaultResponse }}<tr>
       <td align="center">default</td>
       <td></td>
       <td>{{ trimSpace .Description }}</td>
@@ -202,19 +202,19 @@ Name | Description
     </tr>
   </thead>
   <tbody>
-{{ range .AllOf }}{{ if or (and .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}    <tr>
+{{ range .AllOf }}{{ if or (and .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}<tr>
       <td>{{ .Name }}</td>
       <td>{{ if .IsComplexObject }}<a href="#{{ lower .GoType }}">{{ end }}{{ .GoType }}{{ if .IsComplexObject }}</a>{{ end }}</td>
       <td align="center">{{ if .Required }}✓{{ end }}</td>
       <td>{{ trimSpace .Description }}</td>
     </tr>
-{{ end }}{{ else }}    <tr>
+{{ end }}{{ else }}<tr>
       <td></td>
       <td>{{ if .IsComplexObject }}<a href="#{{ lower .GoType }}">{{ end }}{{ .GoType }}{{ if .IsComplexObject }}</a>{{ end }}</td>
       <td align="center">{{ if .Required }}✓{{ end }}</td>
       <td>{{ trimSpace .Description }}</td>
     </tr>{{ end }}{{ end }}
-{{ range .Properties }}    <tr>
+{{ range .Properties }}<tr>
       <td>{{ .Name }}</td>
       <td>{{ if .IsComplexObject }}<a href="#{{ lower .GoType }}">{{ end }}{{ .GoType }}{{ if .IsComplexObject }}</a>{{ end }}</td>
       <td align="center">{{ if .Required }}✓{{ end }}</td>
