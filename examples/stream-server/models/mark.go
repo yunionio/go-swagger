@@ -13,7 +13,6 @@ import (
 )
 
 // Mark mark
-//
 // swagger:model Mark
 type Mark struct {
 

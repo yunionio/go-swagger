@@ -10,7 +10,6 @@ import (
 )
 
 // Principal principal
-//
 // swagger:model principal
 type Principal string
 

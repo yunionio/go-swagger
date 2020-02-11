@@ -17,7 +17,6 @@ import (
 // Contains all the properties any error response from the API will contain.
 // Some properties are optional so might be empty most of the time
 //
-//
 // swagger:model Error
 type Error struct {
 

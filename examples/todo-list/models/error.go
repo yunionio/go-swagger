@@ -13,7 +13,6 @@ import (
 )
 
 // Error error
-//
 // swagger:model error
 type Error struct {
 

@@ -42,9 +42,7 @@ func (tt *templateTest) assertRender(data interface{}, expected string) bool {
 	if !assert.NoError(tt.t, err) {
 		return false
 	}
-	trimmed := strings.TrimLeft(buf.String(), "\n\t ")
-	exp := strings.TrimLeft(expected, "\n\t ")
-	return assert.Equal(tt.t, exp, trimmed)
+	return assert.Equal(tt.t, expected, buf.String())
 }
 
 func TestGenerateModel_Sanity(t *testing.T) {
@@ -263,7 +261,7 @@ func TestGenerateModel_Primitives(t *testing.T) {
 			tt.assertRender(&val, "type TheType "+exp+"\n  \n")
 			continue
 		}
-		tt.assertRender(&val, "type TheType "+exp+"\n  \n// Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
+		tt.assertRender(&val, "type TheType "+exp+"\n  // Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
 	}
 }
 

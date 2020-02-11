@@ -25,25 +25,22 @@ import (
 // NewTaskTrackerAPI creates a new TaskTracker instance
 func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 	return &TaskTrackerAPI{
-		handlers:            make(map[string]map[string]http.Handler),
-		formats:             strfmt.Default,
-		defaultConsumes:     "application/json",
-		defaultProduces:     "application/json",
-		customConsumers:     make(map[string]runtime.Consumer),
-		customProducers:     make(map[string]runtime.Producer),
-		PreServerShutdown:   func() {},
-		ServerShutdown:      func() {},
-		spec:                spec,
-		ServeError:          errors.ServeError,
-		BasicAuthenticator:  security.BasicAuth,
-		APIKeyAuthenticator: security.APIKeyAuth,
-		BearerAuthenticator: security.BearerAuth,
-
+		handlers:              make(map[string]map[string]http.Handler),
+		formats:               strfmt.Default,
+		defaultConsumes:       "application/json",
+		defaultProduces:       "application/json",
+		customConsumers:       make(map[string]runtime.Consumer),
+		customProducers:       make(map[string]runtime.Producer),
+		PreServerShutdown:     func() {},
+		ServerShutdown:        func() {},
+		spec:                  spec,
+		ServeError:            errors.ServeError,
+		BasicAuthenticator:    security.BasicAuth,
+		APIKeyAuthenticator:   security.APIKeyAuth,
+		BearerAuthenticator:   security.BearerAuth,
 		JSONConsumer:          runtime.JSONConsumer(),
 		MultipartformConsumer: runtime.DiscardConsumer,
-
-		JSONProducer: runtime.JSONProducer(),
-
+		JSONProducer:          runtime.JSONProducer(),
 		TasksAddCommentToTaskHandler: tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation tasks.AddCommentToTask has not yet been implemented")
 		}),
@@ -67,9 +64,7 @@ func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 		}),
 		TasksUploadTaskFileHandler: tasks.UploadTaskFileHandlerFunc(func(params tasks.UploadTaskFileParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation tasks.UploadTaskFile has not yet been implemented")
-		}),
-
-		// Applies when the "token" query is set
+		}), // Applies when the "token" query is set
 		APIKeyAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (api_key) token from query param [token] has not yet been implemented")
 		},
@@ -77,6 +72,7 @@ func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 		TokenHeaderAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (token_header) X-Token from header param [X-Token] has not yet been implemented")
 		},
+
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
@@ -109,14 +105,12 @@ type TaskTrackerAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
-
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/vnd.goswagger.examples.task-tracker.v1+json
 	JSONConsumer runtime.Consumer
 	// MultipartformConsumer registers a consumer for the following mime types:
 	//   - multipart/form-data
 	MultipartformConsumer runtime.Consumer
-
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/vnd.goswagger.examples.task-tracker.v1+json
 	JSONProducer runtime.Producer
@@ -209,6 +203,7 @@ func (o *TaskTrackerAPI) Validate() error {
 	if o.JSONConsumer == nil {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
+
 	if o.MultipartformConsumer == nil {
 		unregistered = append(unregistered, "MultipartformConsumer")
 	}
@@ -220,33 +215,41 @@ func (o *TaskTrackerAPI) Validate() error {
 	if o.APIKeyAuth == nil {
 		unregistered = append(unregistered, "TokenAuth")
 	}
+
 	if o.TokenHeaderAuth == nil {
 		unregistered = append(unregistered, "XTokenAuth")
 	}
 
 	if o.TasksAddCommentToTaskHandler == nil {
-		unregistered = append(unregistered, "tasks.AddCommentToTaskHandler")
+		unregistered = append(unregistered, "Tasks.AddCommentToTaskHandler")
 	}
+
 	if o.TasksCreateTaskHandler == nil {
-		unregistered = append(unregistered, "tasks.CreateTaskHandler")
+		unregistered = append(unregistered, "Tasks.CreateTaskHandler")
 	}
+
 	if o.TasksDeleteTaskHandler == nil {
-		unregistered = append(unregistered, "tasks.DeleteTaskHandler")
+		unregistered = append(unregistered, "Tasks.DeleteTaskHandler")
 	}
+
 	if o.TasksGetTaskCommentsHandler == nil {
-		unregistered = append(unregistered, "tasks.GetTaskCommentsHandler")
+		unregistered = append(unregistered, "Tasks.GetTaskCommentsHandler")
 	}
+
 	if o.TasksGetTaskDetailsHandler == nil {
-		unregistered = append(unregistered, "tasks.GetTaskDetailsHandler")
+		unregistered = append(unregistered, "Tasks.GetTaskDetailsHandler")
 	}
+
 	if o.TasksListTasksHandler == nil {
-		unregistered = append(unregistered, "tasks.ListTasksHandler")
+		unregistered = append(unregistered, "Tasks.ListTasksHandler")
 	}
+
 	if o.TasksUpdateTaskHandler == nil {
-		unregistered = append(unregistered, "tasks.UpdateTaskHandler")
+		unregistered = append(unregistered, "Tasks.UpdateTaskHandler")
 	}
+
 	if o.TasksUploadTaskFileHandler == nil {
-		unregistered = append(unregistered, "tasks.UploadTaskFileHandler")
+		unregistered = append(unregistered, "Tasks.UploadTaskFileHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -263,25 +266,32 @@ func (o *TaskTrackerAPI) ServeErrorFor(operationID string) func(http.ResponseWri
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *TaskTrackerAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
+
 	result := make(map[string]runtime.Authenticator)
 	for name := range schemes {
 		switch name {
+
 		case "api_key":
+
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.APIKeyAuth)
 
 		case "token_header":
+
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.TokenHeaderAuth)
 
 		}
 	}
 	return result
+
 }
 
 // Authorizer returns the registered authorizer
 func (o *TaskTrackerAPI) Authorizer() runtime.Authorizer {
+
 	return o.APIAuthorizer
+
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -347,6 +357,7 @@ func (o *TaskTrackerAPI) Context() *middleware.Context {
 
 func (o *TaskTrackerAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
+
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -355,34 +366,42 @@ func (o *TaskTrackerAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/tasks/{id}/comments"] = tasks.NewAddCommentToTask(o.context, o.TasksAddCommentToTaskHandler)
+
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/tasks"] = tasks.NewCreateTask(o.context, o.TasksCreateTaskHandler)
+
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/tasks/{id}"] = tasks.NewDeleteTask(o.context, o.TasksDeleteTaskHandler)
+
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/tasks/{id}/comments"] = tasks.NewGetTaskComments(o.context, o.TasksGetTaskCommentsHandler)
+
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/tasks/{id}"] = tasks.NewGetTaskDetails(o.context, o.TasksGetTaskDetailsHandler)
+
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/tasks"] = tasks.NewListTasks(o.context, o.TasksListTasksHandler)
+
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/tasks/{id}"] = tasks.NewUpdateTask(o.context, o.TasksUpdateTaskHandler)
+
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/tasks/{id}/files"] = tasks.NewUploadTaskFile(o.context, o.TasksUploadTaskFileHandler)
+
 }
 
 // Serve creates a http handler to serve the API over HTTP

@@ -385,7 +385,6 @@ func init() {
   "definitions": {
     "ApiResponse": {
       "type": "object",
-      "title": "is the response to an API call",
       "properties": {
         "code": {
           "type": "integer",
@@ -925,7 +924,6 @@ func init() {
   "definitions": {
     "ApiResponse": {
       "type": "object",
-      "title": "is the response to an API call",
       "properties": {
         "code": {
           "type": "integer",

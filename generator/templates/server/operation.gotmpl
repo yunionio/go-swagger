@@ -90,7 +90,6 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWrit
 
 {{ range .ExtraSchemas }}
 // {{ .Name }} {{ template "docstring" . }}
-//
 // swagger:model {{ .Name }}
-  {{- template "schema" . }}
-{{- end }}
+{{ template "schema" . }}
+{{ end }}

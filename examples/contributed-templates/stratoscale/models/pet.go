@@ -16,7 +16,6 @@ import (
 )
 
 // Pet pet
-//
 // swagger:model Pet
 type Pet struct {
 
