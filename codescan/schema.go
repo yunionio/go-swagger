@@ -273,6 +273,10 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 			tgt.Typed("object", "")
 			return nil
 		}
+		if pkg.PkgPath == "yunion.io/x/jsonutils" {
+			tgt.Typed("object", "")
+			return nil
+		}
 		cmt, hasComments := s.ctx.FindComments(pkg, tio.Name())
 		if !hasComments {
 			cmt = new(ast.CommentGroup)
